@@ -1,13 +1,10 @@
-import './style.css'
-//import sound from './fanfare.mp3'
-
 const elements = []
 const empty = "empty"
 const WIDTH = 4
 const HEIGHT = 4
 
-//const fanfare = new Audio(sound)
-//fanfare.volume = 0.4
+const fanfare = new Audio('fanfare.mp3')
+fanfare.volume = 0.4
 
 const to1DIndex = (row, col, width = WIDTH) => {
     return row * width + col
@@ -20,17 +17,16 @@ const to2DCoordinate = (index, width = WIDTH) => {
 }
 
 const getElementPosition = index => {
-    const gutter = 2
     let left, top, leftShift
 
     if (index > 12) {
-        top = '306px'
+        top = '300px'
         leftShift = 12
     } else if (index > 8) {
-        top = '204px'
+        top = '200px'
         leftShift = 8
     } else if (index > 4) {
-        top = '102px'
+        top = '100px'
         leftShift = 4
     } else {
         top = '0px'
@@ -38,9 +34,6 @@ const getElementPosition = index => {
     }
 
     left = 100 * (index - leftShift)
-    if (left > 100) {
-        left += gutter * (index - 1 - leftShift)
-    }
     left = `${left}px`
 
     return { left, top }
@@ -81,9 +74,33 @@ const positionElement = (element, { left, top }) => {
     element.style.top = top
 }
 
+const tada = () => {
+    const element = component(elements.length)
+    const { top, left } = element.style
+    positionElement(element, getElementPosition(11))
+    gameBoard.append(element)
+    document.querySelectorAll('.number').forEach(e => e.classList.add("hidden"))
+    window.setTimeout(() => { positionElement(element, { top, left }) }, 0)
+    document.querySelectorAll('.brick').forEach(e => e.removeEventListener('click', clicker))
+    fanfare.play()
+}
+
+const clicker = ({ target }) => {
+    const index = elements.indexOf(target)
+    const freeIndex = elements.indexOf(empty)
+    if (possibleTargets(index).includes(freeIndex)) {
+        moveElementBetween(index, freeIndex)
+        positionElement(target, getElementPosition(freeIndex + 1))
+        if (boardIsCompleted()) {
+            tada()
+        }
+    }
+}
+
 const component = index => {
     const element = document.createElement('div')
     const number = document.createElement('div')
+
     number.classList.add('number')
     number.textContent = index
     element.append(number)
@@ -92,24 +109,7 @@ const component = index => {
     element.classList.add(`brick${index}`)
     positionElement(element, getElementPosition(index))
 
-    element.addEventListener('click', e => {
-        const index = elements.indexOf(element)
-        const freeIndex = elements.indexOf(empty)
-        if (possibleTargets(index).includes(freeIndex)) {
-            moveElementBetween(index, freeIndex)
-            positionElement(element, getElementPosition(freeIndex + 1))
-            if (boardIsCompleted()) {
-                const el = component(elements.length)
-                const {top, left} = el.style
-                positionElement(el, getElementPosition(11))
-                gameBoard.append(el)
-                document.querySelectorAll('.number').forEach(e => e.classList.add("hidden"))
-                window.setTimeout(() => {el.style.top = top; el.style.left = left}, 0)
-                console.log("TADA!")
-//                fanfare.play()
-            }
-        }
-    })
+    element.addEventListener('click', clicker)
 
     return element
 }
@@ -128,4 +128,14 @@ elements.forEach((element, index) => positionElement(element, getElementPosition
 elements.push(empty)
 
 document.body.appendChild(gameBoard)
+
+const button = document.getElementById('showNumbers')
+button.addEventListener('click', () => {
+    if (button.checked) {
+        document.querySelectorAll('.number').forEach(e => e.classList.remove("hidden"))
+    } else {
+        document.querySelectorAll('.number').forEach(e => e.classList.add("hidden"))
+    }
+})
+
 

@@ -5,6 +5,7 @@ body {
 .gameboard {
     position: relative;
     width: 500px;
+    left: -50px;
     margin: 100px auto;
 }
 
@@ -29,6 +30,8 @@ body {
     text-shadow: 2px 2px 4px #000;
     opacity: 1;
     transition: opacity ease-in-out 1s;
+    user-select: none;
+    pointer-events: none;
 }
 
 .hidden {
